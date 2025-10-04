@@ -14,7 +14,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #f8f9fa;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -24,8 +24,9 @@
         
         .container {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             padding: 40px;
             max-width: 400px;
             width: 100%;
@@ -34,7 +35,15 @@
         
         .container h1 {
             color: #333;
-            font-size: 28px;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .container .subtitle {
+            color: #495057;
+            font-size: 18px;
+            font-weight: 400;
             margin-bottom: 30px;
         }
         
@@ -90,21 +99,22 @@
         }
         
         .btn-reopen {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #495057;
             color: white;
             padding: 15px 30px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             margin-top: 20px;
         }
         
         .btn-reopen:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            background-color: #343a40;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
         .btn-reopen:disabled {
@@ -115,8 +125,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>🏠</h1>
-        <p>Haustür-Zugang</p>
+        <h1>🏠 Airbnb Gäste-Zugang</h1>
+        <p class="subtitle">Willkommen bei bunte butze coworking</p>
         
         <div id="status" class="status-message status-loading">
             <div class="loading-spinner"></div>
@@ -222,7 +232,7 @@
         statusDiv.className = 'status-message status-success';
         statusDiv.innerHTML = `
             <strong>✅ Token gültig!</strong><br>
-            Klicken Sie auf den Button, um die Haustür zu öffnen.
+            Klicke auf den Button, um die Haustür zu öffnen.
         `;
         
         if (info.guest_name || info.valid_until) {

@@ -76,7 +76,7 @@ try {
         
         if ($doorResult['success']) {
             $response['success'] = true;
-            $response['message'] = 'Haustür wird geöffnet... Bitte warten Sie bis zu 10 Sekunden.';
+            $response['message'] = 'Haustür wurde geöffnet...';
             $response['guest_name'] = $guestData['guest_name'];
             $response['valid_until'] = date('d.m.Y', $guestData['expires']);
             
