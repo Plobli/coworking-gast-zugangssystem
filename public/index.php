@@ -299,7 +299,6 @@ if (isset($_POST['generate'])) {
         <?php endif; ?>
         
         <div class="footer">
-            <p>Airbnb Gäste-System • Sichere Haustür-Zugänge</p>
         </div>
     </div>
     
