@@ -1,0 +1,30 @@
+{
+    "name": "buntebutze/airbnb-guest-system",
+    "description": "Standalone Guest Access System for Airbnb Property",
+    "version": "1.0.0",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Christopher",
+            "email": "info@buntebutze.de"
+        }
+    ],
+    "require": {
+        "php": ">=8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "files": [
+            "config/bootstrap.php"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

@@ -1,0 +1,33 @@
+# Aktiviere das Apache-Modul mod_rewrite
+RewriteEngine On
+
+# Basic Auth Header für PHP verfügbar machen (für CGI/FastCGI)
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+# Fix for malformed Host header issues
+RewriteCond %{HTTP_HOST} ^$
+RewriteRule .* - [F,L]
+
+# Standard-Indexdatei
+DirectoryIndex index.php
+
+# Sicherheit: Verstecke sensible Dateien
+<Files ".env">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+<Files "composer.*">
+    Order Allow,Deny  
+    Deny from all
+</Files>
+
+<Files ".git*">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Verstecke Verzeichnisse vor direktem Zugriff
+RedirectMatch 404 ^/(config|storage)/.*$

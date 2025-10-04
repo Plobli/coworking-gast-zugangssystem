@@ -1,0 +1,7 @@
+favicon.ico
+composer.lock
+vendor/
+storage/logs/*.log
+storage/logs/*.json
+.DS_Store
+*.tmp
