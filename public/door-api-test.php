@@ -82,7 +82,8 @@ function testDoorAPI($withCloudflare = true) {
         $headers[] = "CF-Access-Client-Secret: {$cfClientSecret}";
     }
     
-    $url = "{$baseUrl}/api/doors/house/open";
+    // baseUrl ist jetzt bereits die komplette URL zu access-proxy.php
+    $url = $baseUrl;
     
     $ch = curl_init();
     curl_setopt_array($ch, [
@@ -92,7 +93,7 @@ function testDoorAPI($withCloudflare = true) {
         CURLOPT_TIMEOUT => 15,
         CURLOPT_USERPWD => "{$username}:{$password}",
         CURLOPT_HTTPHEADER => $headers,
-        CURLOPT_POSTFIELDS => json_encode(['action' => 'open']),
+        CURLOPT_POSTFIELDS => json_encode(['door' => 'house', 'action' => 'open']),
         CURLOPT_VERBOSE => false,
         CURLOPT_SSL_VERIFYPEER => true,
         CURLOPT_FOLLOWLOCATION => true
@@ -117,7 +118,8 @@ function testDoorAPIGet() {
     $cfClientId = envRequired('CF_ACCESS_CLIENT_ID');
     $cfClientSecret = envRequired('CF_ACCESS_CLIENT_SECRET');
     
-    $url = "{$baseUrl}/api/doors/house/open";
+    // baseUrl ist bereits die komplette URL zu access-proxy.php
+    $url = $baseUrl;
     
     $ch = curl_init();
     curl_setopt_array($ch, [
