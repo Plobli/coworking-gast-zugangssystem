@@ -185,8 +185,8 @@ function openHouseDoor(): array
         $cfClientId = envRequired('CF_ACCESS_CLIENT_ID');
         $cfClientSecret = envRequired('CF_ACCESS_CLIENT_SECRET');
         
-        // PI_SERVICE_URL enthält jetzt die vollständige URL zu access-proxy.php
-        $url = $piServiceUrl;
+        // Verwende den korrekten Endpunkt wie im Coworking-System
+        $url = "{$piServiceUrl}/open-house-door";
         
         // Prüfe ob cURL verfügbar ist
         if (!function_exists('curl_init')) {
@@ -196,17 +196,16 @@ function openHouseDoor(): array
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
-            CURLOPT_POST => true,
+            CURLOPT_HTTPGET => true,  // Coworking-System verwendet GET, nicht POST
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_CONNECTTIMEOUT => 10,
             CURLOPT_USERPWD => "{$username}:{$password}",
             CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
                 "CF-Access-Client-Id: {$cfClientId}",
                 "CF-Access-Client-Secret: {$cfClientSecret}"
             ],
-            CURLOPT_POSTFIELDS => json_encode(['door' => 'house', 'action' => 'open']),
+            // Kein POST-Body needed für GET request
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_USERAGENT => 'Airbnb-Guest-System/1.0'
