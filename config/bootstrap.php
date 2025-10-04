@@ -118,7 +118,7 @@ function checkRateLimit(string $clientId, int $maxAttempts = 20, int $timeWindow
 /**
  * Generate guest access token
  */
-function generateGuestToken(string $guestName, int $expiryTimestamp): string
+function generateGuestToken(string $guestName, int $startTimestamp, int $expiryTimestamp): string
 {
     $key = base64_decode(envRequired('GUEST_ACCESS_ENCRYPTION_KEY'));
     
@@ -126,6 +126,7 @@ function generateGuestToken(string $guestName, int $expiryTimestamp): string
     $payload = [
         'type' => 'guest_access',
         'guest_name' => $guestName,
+        'starts' => $startTimestamp,
         'expires' => $expiryTimestamp,
         'generated' => time()
     ];

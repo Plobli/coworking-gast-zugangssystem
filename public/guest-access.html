@@ -234,11 +234,12 @@
             Klicke auf den Button, um die Haustür zu öffnen.
         `;
         
-        if (info.guest_name || info.valid_until) {
+        if (info.guest_name || info.valid_from || info.valid_until) {
             const infoDiv = document.getElementById('guest-info');
             infoDiv.innerHTML = `
                 ${info.guest_name ? `<strong>Gast:</strong> ${info.guest_name}<br>` : ''}
-                ${info.valid_until ? `<strong>Link gültig bis:</strong> ${info.valid_until}` : ''}
+                ${info.valid_from ? `<strong>Gültig ab:</strong> ${info.valid_from}<br>` : ''}
+                ${info.valid_until ? `<strong>Gültig bis:</strong> ${info.valid_until}` : ''}
             `;
             infoDiv.style.display = 'block';
         }
@@ -273,6 +274,7 @@
             <strong>❌ Fehler</strong><br>
             ${message}
             ${data.expired_at ? `<br><br><small>Abgelaufen am: ${data.expired_at}</small>` : ''}
+            ${data.valid_from ? `<br><br><small>Gültig ab: ${data.valid_from}</small>` : ''}
         `;
         
         // Buttons verstecken bei Fehlern

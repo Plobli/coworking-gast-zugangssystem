@@ -48,30 +48,41 @@ $success = '';
 // Link generieren
 if (isset($_POST['generate'])) {
     $guestName = trim($_POST['guest_name'] ?? '');
+    $validFrom = trim($_POST['valid_from'] ?? '');
     $validUntil = trim($_POST['valid_until'] ?? '');
     
     // Validierung
     if (empty($guestName)) {
         $error = 'Name des Gastes ist erforderlich';
+    } elseif (empty($validFrom)) {
+        $error = 'Startdatum ist erforderlich';
     } elseif (empty($validUntil)) {
-        $error = 'Gültigkeitsdatum ist erforderlich';
+        $error = 'Enddatum ist erforderlich';
     } else {
-        // Datum parsen (Format: YYYY-MM-DD)
+        // Datums parsen (Format: YYYY-MM-DD)
+        $startTimestamp = strtotime($validFrom . ' 00:00:00');
         $expiryTimestamp = strtotime($validUntil . ' 23:59:59');
-        if ($expiryTimestamp === false || $expiryTimestamp <= time()) {
-            $error = 'Ungültiges Datum oder Datum liegt in der Vergangenheit';
+        
+        if ($startTimestamp === false) {
+            $error = 'Ungültiges Startdatum';
+        } elseif ($expiryTimestamp === false) {
+            $error = 'Ungültiges Enddatum';
+        } elseif ($startTimestamp >= $expiryTimestamp) {
+            $error = 'Startdatum muss vor dem Enddatum liegen';
         } else {
             try {
-                $guestToken = generateGuestToken($guestName, $expiryTimestamp);
+                $guestToken = generateGuestToken($guestName, $startTimestamp, $expiryTimestamp);
                 $baseUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? envRequired('APP_DOMAIN'));
                 $generatedLink = $baseUrl . '/guest-access.html?token=' . urlencode($guestToken);
                 
+                $startsAt = date('d.m.Y', $startTimestamp);
                 $expiresAt = date('d.m.Y', $expiryTimestamp);
-                $success = "Link erfolgreich generiert! Gültig bis: $expiresAt (23:59)";
+                $success = "Link erfolgreich generiert! Gültig von: $startsAt (00:00) bis: $expiresAt (23:59)";
                 
                 // Admin-Aktion loggen
                 logGuestAccess("Admin: Link generiert", [
                     'guest_name' => $guestName,
+                    'starts' => date('Y-m-d H:i:s', $startTimestamp),
                     'expires' => date('Y-m-d H:i:s', $expiryTimestamp),
                     'admin_ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
                 ]);
@@ -272,6 +283,13 @@ if (isset($_POST['generate'])) {
                 <input type="text" id="guest_name" name="guest_name" 
                        value="<?= htmlspecialchars($_POST['guest_name'] ?? '') ?>" 
                        placeholder="z.B. Max Mustermann" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="valid_from">Link gültig ab (Datum)</label>
+                <input type="date" id="valid_from" name="valid_from" 
+                       value="<?= htmlspecialchars($_POST['valid_from'] ?? date('Y-m-d')) ?>" 
+                       min="<?= date('Y-m-d') ?>" required>
             </div>
             
             <div class="form-group">

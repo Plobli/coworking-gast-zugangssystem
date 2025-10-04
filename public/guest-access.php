@@ -45,7 +45,20 @@ try {
     }
     
     // Zeitgrenzen prüfen
-    if (time() > $guestData['expires']) {
+    $currentTime = time();
+    
+    // Prüfe ob Token noch nicht gültig ist (zu früh)
+    if (isset($guestData['starts']) && $currentTime < $guestData['starts']) {
+        $response['error'] = 'Zugangs-Token ist noch nicht gültig';
+        $response['valid_from'] = date('d.m.Y H:i', $guestData['starts']);
+        http_response_code(403);
+        logGuestAccess("Token noch nicht gültig", ['ip' => $clientIp, 'guest' => $guestData['guest_name']]);
+        echo json_encode($response);
+        exit;
+    }
+    
+    // Prüfe ob Token abgelaufen ist (zu spät)
+    if ($currentTime > $guestData['expires']) {
         $response['error'] = 'Zugangs-Token ist abgelaufen';
         $response['expired_at'] = date('d.m.Y H:i', $guestData['expires']);
         http_response_code(410);
@@ -60,6 +73,7 @@ try {
         $response['success'] = true;
         $response['message'] = 'Token ist gültig';
         $response['guest_name'] = $guestData['guest_name'];
+        $response['valid_from'] = isset($guestData['starts']) ? date('d.m.Y', $guestData['starts']) : null;
         $response['valid_until'] = date('d.m.Y', $guestData['expires']);
         
         // Token-Validierung loggen (ohne Türöffnung)
@@ -78,6 +92,7 @@ try {
             $response['success'] = true;
             $response['message'] = 'Haustür wurde geöffnet...';
             $response['guest_name'] = $guestData['guest_name'];
+            $response['valid_from'] = isset($guestData['starts']) ? date('d.m.Y', $guestData['starts']) : null;
             $response['valid_until'] = date('d.m.Y', $guestData['expires']);
             
             // Erfolgreichen Zugang loggen
