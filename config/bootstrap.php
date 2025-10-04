@@ -5,6 +5,9 @@
  * Minimale Konfiguration nur für Gast-Zugang
  */
 
+// Load token database
+require_once __DIR__ . '/token-db.php';
+
 // Simple environment loader (ohne externe Dependencies)
 $envFile = __DIR__ . '/.env';
 if (file_exists($envFile)) {
@@ -120,27 +123,24 @@ function checkRateLimit(string $clientId, int $maxAttempts = 20, int $timeWindow
  */
 function generateGuestToken(string $guestName, int $startTimestamp, int $expiryTimestamp): string
 {
-    $key = base64_decode(envRequired('GUEST_ACCESS_ENCRYPTION_KEY'));
+    $db = new TokenDatabase();
     
-    // Compact payload for shorter URLs
-    $payload = [
-        'type' => 'guest_access',
-        'guest_name' => $guestName,
-        'starts' => $startTimestamp,
-        'expires' => $expiryTimestamp,
-        'generated' => time()
-    ];
-    
-    $plaintext = json_encode($payload);
-    $nonce = random_bytes(12);
-    $ciphertext = openssl_encrypt($plaintext, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag);
-    
-    if ($ciphertext === false) {
-        throw new RuntimeException('Token encryption failed');
+    // Automatisches Cleanup alter Token (gelegentlich)
+    if (random_int(1, 100) <= 5) { // 5% Chance
+        $deleted = $db->cleanupExpiredTokens();
+        if ($deleted > 0) {
+            debugLog('Token cleanup', ['deleted_count' => $deleted]);
+        }
     }
     
-    // URL-safe Base64 encoding for shorter tokens
-    return rtrim(strtr(base64_encode($nonce . $tag . $ciphertext), '+/', '-_'), '=');
+    // Speichere Token-Daten und erhalte kurze ID
+    $tokenData = [
+        'guest_name' => $guestName,
+        'starts' => $startTimestamp,
+        'expires' => $expiryTimestamp
+    ];
+    
+    return $db->storeToken($tokenData);
 }
 
 /**
@@ -149,27 +149,32 @@ function generateGuestToken(string $guestName, int $startTimestamp, int $expiryT
 function validateGuestToken(string $token): ?array
 {
     try {
-        $key = base64_decode(envRequired('GUEST_ACCESS_ENCRYPTION_KEY'));
+        $db = new TokenDatabase();
         
-        // URL-safe Base64 decoding
-        $token = str_pad(strtr($token, '-_', '+/'), strlen($token) % 4, '=', STR_PAD_RIGHT);
-        $data = base64_decode($token);
+        // Normalisiere Token (nur Großbuchstaben und Zahlen)
+        $token = strtoupper(trim($token));
         
-        if (strlen($data) < 28) return null;
+        // Prüfe Format (8 Zeichen, Base32 ohne verwirrende Zeichen)
+        if (!preg_match('/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{8}$/', $token)) {
+            return null;
+        }
         
-        $nonce = substr($data, 0, 12);
-        $tag = substr($data, 12, 16);
-        $ciphertext = substr($data, 28);
+        // Lade Token-Daten aus Datenbank
+        $tokenData = $db->getToken($token);
+        if (!$tokenData) {
+            return null;
+        }
         
-        $plaintext = openssl_decrypt($ciphertext, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag);
+        // Markiere Token als verwendet (für Statistiken)
+        $db->markTokenUsed($token);
         
-        if ($plaintext === false) return null;
+        // Füge type für Kompatibilität hinzu
+        $tokenData['type'] = 'guest_access';
         
-        $payload = json_decode($plaintext, true);
-        return is_array($payload) ? $payload : null;
+        return $tokenData;
         
     } catch (Exception $e) {
-        debugLog('Token validation error', ['error' => $e->getMessage()]);
+        debugLog('Token validation error', ['error' => $e->getMessage(), 'token' => $token]);
         return null;
     }
 }
