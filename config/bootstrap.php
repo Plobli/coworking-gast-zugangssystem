@@ -185,7 +185,8 @@ function openHouseDoor(): array
         $cfClientId = envRequired('CF_ACCESS_CLIENT_ID');
         $cfClientSecret = envRequired('CF_ACCESS_CLIENT_SECRET');
         
-        $url = "{$piServiceUrl}/api/doors/house/open";
+        // PI_SERVICE_URL enthält jetzt die vollständige URL zu access-proxy.php
+        $url = $piServiceUrl;
         
         // Prüfe ob cURL verfügbar ist
         if (!function_exists('curl_init')) {
@@ -205,7 +206,7 @@ function openHouseDoor(): array
                 "CF-Access-Client-Id: {$cfClientId}",
                 "CF-Access-Client-Secret: {$cfClientSecret}"
             ],
-            CURLOPT_POSTFIELDS => json_encode(['action' => 'open']),
+            CURLOPT_POSTFIELDS => json_encode(['door' => 'house', 'action' => 'open']),
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_USERAGENT => 'Airbnb-Guest-System/1.0'
