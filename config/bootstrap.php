@@ -187,38 +187,67 @@ function openHouseDoor(): array
         
         $url = "{$piServiceUrl}/api/doors/house/open";
         
+        // Prüfe ob cURL verfügbar ist
+        if (!function_exists('curl_init')) {
+            return ['success' => false, 'message' => 'cURL-Extension nicht verfügbar'];
+        }
+        
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10,
             CURLOPT_USERPWD => "{$username}:{$password}",
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
                 "CF-Access-Client-Id: {$cfClientId}",
                 "CF-Access-Client-Secret: {$cfClientSecret}"
             ],
-            CURLOPT_POSTFIELDS => json_encode(['action' => 'open'])
+            CURLOPT_POSTFIELDS => json_encode(['action' => 'open']),
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_USERAGENT => 'Airbnb-Guest-System/1.0'
         ]);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
+        $effectiveUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         curl_close($ch);
+        
+        // Debug-Informationen loggen
+        debugLog('Door API Request', [
+            'url' => $url,
+            'effective_url' => $effectiveUrl,
+            'http_code' => $httpCode,
+            'curl_error' => $error,
+            'response_length' => strlen($response ?? ''),
+            'response_preview' => substr($response ?? '', 0, 200)
+        ]);
         
         if ($error) {
             return ['success' => false, 'message' => "Verbindungsfehler: {$error}"];
         }
         
         if ($httpCode === 200) {
-            return ['success' => true, 'message' => 'Haustür geöffnet'];
+            return ['success' => true, 'message' => 'Haustür geöffnet', 'response' => $response];
+        } elseif ($httpCode === 401) {
+            return ['success' => false, 'message' => "Authentifizierungsfehler (HTTP 401) - Prüfen Sie Username/Passwort"];
+        } elseif ($httpCode === 403) {
+            return ['success' => false, 'message' => "Zugriff verweigert (HTTP 403) - Prüfen Sie Cloudflare Access Credentials"];
+        } elseif ($httpCode === 404) {
+            return ['success' => false, 'message' => "API-Endpunkt nicht gefunden (HTTP 404) - Prüfen Sie die URL: {$url}"];
+        } elseif ($httpCode === 405) {
+            return ['success' => false, 'message' => "HTTP-Methode nicht erlaubt (HTTP 405) - POST nicht unterstützt"];
         } else {
-            return ['success' => false, 'message' => "API-Fehler: HTTP {$httpCode}"];
+            return ['success' => false, 'message' => "API-Fehler: HTTP {$httpCode}", 'response' => $response];
         }
         
     } catch (Exception $e) {
-        return ['success' => false, 'message' => $e->getMessage()];
+        debugLog('Door opening exception', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+        return ['success' => false, 'message' => "Systemfehler: " . $e->getMessage()];
     }
 }
 
