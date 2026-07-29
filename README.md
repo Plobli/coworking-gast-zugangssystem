@@ -24,13 +24,25 @@ Das System läuft als Docker-Container (PHP 8.2 + Apache) hinter einem Caddy-Rev
 
 1. Repository klonen
 2. `config/.env` anlegen (siehe Konfiguration unten, Datei ist per `.gitignore` ausgeschlossen)
-3. Container bauen und starten:
+3. Container starten:
    ```bash
-   docker compose up -d --build
+   docker compose up -d
    ```
 4. Reverse-Proxy (z. B. Caddy) auf den Container-Port 80 zeigen lassen
 
 Der Container erwartet ein externes Docker-Netzwerk `web`, in dem auch der Reverse-Proxy hängt (`docker-compose.yml`). Persistenter Storage (Token-DB, Logs) liegt im Docker-Volume `storage`.
+
+### Automatisches Deployment (CI/CD)
+
+Bei jedem Push auf `main` baut GitHub Actions ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)) automatisch ein neues Docker-Image und veröffentlicht es unter `ghcr.io/plobli/coworking-gast-zugangssystem:latest`.
+
+Auf dem Server läuft zusätzlich ein `watchtower`-Container (siehe `docker-compose.yml`), der alle 60 Sekunden prüft, ob ein neues Image verfügbar ist, es automatisch zieht und den `app`-Container neu startet. Es ist also kein manuelles Deployment mehr nötig — eine Änderung, die auf `main` gemerged wird, landet innerhalb weniger Minuten live auf dem Server.
+
+Voraussetzung einmalig auf dem Server: Falls das GHCR-Package privat ist, muss sich Docker dort einloggen:
+```bash
+echo "<GitHub PAT mit read:packages>" | docker login ghcr.io -u <github-username> --password-stdin
+```
+Alternativ das Package in den GitHub-Paketeinstellungen auf "public" stellen, dann ist kein Login nötig.
 
 ### Manuelle Installation (klassisches Hosting)
 

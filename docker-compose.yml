@@ -1,12 +1,24 @@
 services:
   app:
-    build: .
+    image: ghcr.io/plobli/coworking-gast-zugangssystem:latest
     container_name: coworking-gast-zugangssystem
     restart: unless-stopped
     volumes:
       - storage:/var/www/storage
     networks:
       - web
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 60 --label-enable --cleanup
+    environment:
+      - WATCHTOWER_LABEL_ENABLE=true
 
 networks:
   web:
