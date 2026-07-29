@@ -45,6 +45,21 @@ $generatedLink = '';
 $error = '';
 $success = '';
 
+// Link löschen
+if (isset($_POST['delete_token'])) {
+    $tokenId = trim($_POST['token_id'] ?? '');
+    if ($tokenId !== '') {
+        $db = new TokenDatabase();
+        if ($db->deleteToken($tokenId)) {
+            $success = 'Link wurde gelöscht.';
+            logGuestAccess("Admin: Link gelöscht", [
+                'token_id' => $tokenId,
+                'admin_ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+            ]);
+        }
+    }
+}
+
 // Link generieren
 if (isset($_POST['generate'])) {
     $guestName = trim($_POST['guest_name'] ?? '');
@@ -97,6 +112,35 @@ if (isset($_POST['generate'])) {
         }
     }
 }
+
+// Übersicht: Links in Kategorien einteilen
+$now = time();
+$recentThreshold = $now - 7 * 86400;
+$db = new TokenDatabase();
+$allTokens = $db->listTokens();
+
+$activeLinks = [];
+$upcomingLinks = [];
+$expiredLinks = [];
+
+foreach ($allTokens as $t) {
+    if ($t['starts'] <= $now && $t['expires'] >= $now) {
+        $activeLinks[] = $t;
+    } elseif ($t['starts'] > $now) {
+        $upcomingLinks[] = $t;
+    } elseif ($t['expires'] < $now && $t['expires'] >= $recentThreshold) {
+        $expiredLinks[] = $t;
+    }
+}
+
+usort($activeLinks, fn($a, $b) => $a['expires'] <=> $b['expires']);
+usort($upcomingLinks, fn($a, $b) => $a['starts'] <=> $b['starts']);
+usort($expiredLinks, fn($a, $b) => $b['expires'] <=> $a['expires']);
+
+function accessTypeLabel(string $accessType): string
+{
+    return $accessType === 'house_and_coworking' ? 'Haustür + Coworking-Tür' : 'nur Haustür';
+}
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -128,8 +172,12 @@ if (isset($_POST['generate'])) {
             border: 1px solid #e9ecef;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             padding: 40px;
-            max-width: 500px;
+            max-width: 900px;
             width: 100%;
+        }
+
+        form:not(.delete-form) {
+            max-width: 500px;
         }
         
         .admin-header {
@@ -280,6 +328,65 @@ if (isset($_POST['generate'])) {
             color: #666;
             font-size: 14px;
         }
+
+        .overview {
+            margin-top: 40px;
+            overflow-x: auto;
+        }
+
+        .overview h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 12px;
+            margin-top: 30px;
+        }
+
+        .overview h2:first-child {
+            margin-top: 0;
+        }
+
+        .link-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .link-table th, .link-table td {
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .link-table th {
+            color: #666;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .empty-hint {
+            color: #666;
+            font-size: 14px;
+            padding: 8px 0 0;
+        }
+
+        .delete-form {
+            display: inline;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -357,8 +464,60 @@ if (isset($_POST['generate'])) {
         
         <div class="footer">
         </div>
+
+        <div class="overview">
+            <?php
+            function renderLinkTable(array $links, string $emptyText): void
+            {
+                if (empty($links)) {
+                    echo '<p class="empty-hint">' . htmlspecialchars($emptyText) . '</p>';
+                    return;
+                }
+                ?>
+                <table class="link-table">
+                    <thead>
+                        <tr>
+                            <th>Gast</th>
+                            <th>Zugang</th>
+                            <th>Gültig von</th>
+                            <th>Gültig bis</th>
+                            <th>Nutzungen</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($links as $link): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($link['guest_name']) ?></td>
+                            <td><?= htmlspecialchars(accessTypeLabel($link['access_type'] ?? 'house_only')) ?></td>
+                            <td><?= htmlspecialchars(date('d.m.Y', $link['starts'])) ?></td>
+                            <td><?= htmlspecialchars(date('d.m.Y', $link['expires'])) ?></td>
+                            <td><?= (int)($link['used_count'] ?? 0) ?></td>
+                            <td>
+                                <form class="delete-form" method="post" onsubmit="return confirm('Diesen Link wirklich löschen?');">
+                                    <input type="hidden" name="token_id" value="<?= htmlspecialchars($link['id']) ?>">
+                                    <button type="submit" name="delete_token" class="delete-btn">Löschen</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <?php
+            }
+            ?>
+
+            <h2>Aktive Links</h2>
+            <?php renderLinkTable($activeLinks, 'Keine aktiven Links.'); ?>
+
+            <h2>Zukünftig aktive Links</h2>
+            <?php renderLinkTable($upcomingLinks, 'Keine zukünftig aktiven Links.'); ?>
+
+            <h2>Kürzlich abgelaufene Links (letzte 7 Tage)</h2>
+            <?php renderLinkTable($expiredLinks, 'Keine kürzlich abgelaufenen Links.'); ?>
+        </div>
     </div>
-    
+
     <script>
     function copyToClipboard() {
         const linkElement = document.getElementById('generatedLink');

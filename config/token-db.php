@@ -102,6 +102,35 @@ class TokenDatabase
     }
     
     /**
+     * List all tokens, each enriched with its short ID under the 'id' key
+     */
+    public function listTokens(): array
+    {
+        $data = $this->loadData();
+        $tokens = [];
+        foreach ($data as $id => $token) {
+            $token['id'] = $id;
+            $tokens[] = $token;
+        }
+        return $tokens;
+    }
+
+    /**
+     * Delete a single token by its short ID
+     */
+    public function deleteToken(string $shortId): bool
+    {
+        $data = $this->loadData();
+        if (!isset($data[$shortId])) {
+            return false;
+        }
+
+        unset($data[$shortId]);
+        $this->saveData($data);
+        return true;
+    }
+
+    /**
      * Get statistics
      */
     public function getStats(): array
