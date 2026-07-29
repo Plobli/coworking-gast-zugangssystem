@@ -3,6 +3,8 @@ services:
     image: ghcr.io/plobli/coworking-gast-zugangssystem:latest
     container_name: coworking-gast-zugangssystem
     restart: unless-stopped
+    env_file:
+      - config/.env
     volumes:
       - storage:/var/www/storage
     networks:
@@ -11,7 +13,7 @@ services:
       - com.centurylinklabs.watchtower.enable=true
 
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower:latest
     container_name: watchtower
     restart: unless-stopped
     volumes:
