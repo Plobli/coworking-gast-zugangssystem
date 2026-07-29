@@ -1,20 +1,30 @@
-# Airbnb Guest Access System
+# Gäste-Zugangssystem
 
-Ein eigenständiges System für zeitlich begrenzte Haustür-Zugänge für Airbnb-Gäste.
+Ein eigenständiges System für zeitlich begrenzte Türzugänge für Hausgäste, AirBnB-Gäste und Coworking-Gäste der bunte butze.
+
+## Zugangsarten
+
+Beim Erstellen eines Gäste-Links wird eine von zwei Zugangsarten festgelegt:
+
+- **Nur Haustür** — für Hausgäste bzw. AirBnB-Gäste. Der Link öffnet ausschließlich die Haustür.
+- **Haustür + Coworking-Tür** — für Gäste im Coworking Space. Der Link öffnet wahlweise die Haustür oder die Coworking-Tür.
+
+Die Gäste-Seite zeigt automatisch nur die Türen an, für die der jeweilige Link freigeschaltet ist.
 
 ## Features
 
 - 🔐 **Sicherer Token-basierter Zugang** mit AES-256-GCM Verschlüsselung
-- 🕒 **Zeitbegrenzte Links** mit flexiblem Ablaufdatum
+- 🚪 **Zwei Zugangsarten** — nur Haustür oder Haustür + Coworking-Tür
+- 🕒 **Zeitbegrenzte Links** mit flexiblem Start- und Ablaufdatum
 - 🛡️ **Basic-Auth Admin-Interface** für sicheren Zugriff
-- 🚪 **Raspberry Pi Integration** für automatische Türöffnung
+- 🍓 **Raspberry Pi Integration** für automatische Türöffnung
 - ⚡ **Rate Limiting** zum Schutz vor DoS-Angriffen
 - 📱 **Mobile-optimierte Oberfläche** für einfache Bedienung
 
 ## Technische Details
 
 - **PHP 8.0+** ohne externe Dependencies
-- **Eigenständiges System** unabhängig vom Coworking-Zugangssystem
+- **Eigenständiges System** unabhängig vom internen Coworking-Zugangssystem
 - **URL-sichere Tokens** für kompakte Links
 - **Umfassendes Logging** aller Zugriffe und Ereignisse
 
@@ -66,8 +76,9 @@ CF_ACCESS_CLIENT_SECRET=...
 ## Nutzung
 
 1. **Admin-Zugang**: `https://gast.buntebutze.de/`
-2. **Gäste-Links**: Werden automatisch generiert und sind gültig bis zum angegebenen Datum
-3. **Türöffnung**: Gäste klicken auf den Button, um die Haustür zu öffnen
+2. **Link erstellen**: Name des Gastes, Zugangsart (nur Haustür oder Haustür + Coworking-Tür) sowie Gültigkeitszeitraum festlegen — der Link wird automatisch generiert
+3. **Türöffnung durch den Gast**: Gast öffnet den Link, sieht Begrüßung und die für ihn freigeschalteten Türen (Haustür bzw. Haustür + Coworking-Tür) und öffnet sie per Klick
+4. **Übersicht**: Aktive, zukünftige und kürzlich abgelaufene Links lassen sich im Admin-Interface einsehen und einzelne Links vorzeitig löschen
 
 ## Sicherheit
 

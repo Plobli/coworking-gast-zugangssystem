@@ -7,3 +7,4 @@ storage/logs/*.json
 storage/tokens.json
 .DS_Store
 *.tmp
+docs/
