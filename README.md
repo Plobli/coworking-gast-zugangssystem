@@ -18,27 +18,42 @@ Ein eigenständiges System für zeitlich begrenzte Haustür-Zugänge für Airbnb
 - **URL-sichere Tokens** für kompakte Links
 - **Umfassendes Logging** aller Zugriffe und Ereignisse
 
-## Installation
+## Installation (Docker)
 
-1. Repository auf den Server kopieren
-2. Webserver-Root auf `public/` Verzeichnis zeigen lassen
-3. `.env` Konfiguration anpassen
-4. Apache/Nginx für Basic-Auth konfigurieren
+Das System läuft als Docker-Container (PHP 8.2 + Apache) hinter einem Caddy-Reverse-Proxy.
+
+1. Repository klonen
+2. `config/.env` anlegen (siehe Konfiguration unten, Datei ist per `.gitignore` ausgeschlossen)
+3. Container bauen und starten:
+   ```bash
+   docker compose up -d --build
+   ```
+4. Reverse-Proxy (z. B. Caddy) auf den Container-Port 80 zeigen lassen
+
+Der Container erwartet ein externes Docker-Netzwerk `web`, in dem auch der Reverse-Proxy hängt (`docker-compose.yml`). Persistenter Storage (Token-DB, Logs) liegt im Docker-Volume `storage`.
+
+### Manuelle Installation (klassisches Hosting)
+
+Alternativ kann das System ohne Docker auf einem klassischen Apache/PHP-Hosting betrieben werden — siehe [WEBSERVER_SETUP.md](WEBSERVER_SETUP.md).
 
 ## Konfiguration
 
 Wichtige Umgebungsvariablen in `config/.env`:
 
 ```env
-APP_DOMAIN=airbnb.buntebutze.de
+APP_DOMAIN=gast.buntebutze.de
 GUEST_ADMIN_PASSWORD=IhrSicheresPasswort
 GUEST_ACCESS_ENCRYPTION_KEY=Base64-Schlüssel
 PI_SERVICE_URL=https://ihr-pi-service.de
+PI_API_USERNAME=...
+PI_API_PASSWORD=...
+CF_ACCESS_CLIENT_ID=...
+CF_ACCESS_CLIENT_SECRET=...
 ```
 
 ## Nutzung
 
-1. **Admin-Zugang**: `https://airbnb.buntebutze.de/`
+1. **Admin-Zugang**: `https://gast.buntebutze.de/`
 2. **Gäste-Links**: Werden automatisch generiert und sind gültig bis zum angegebenen Datum
 3. **Türöffnung**: Gäste klicken auf den Button, um die Haustür zu öffnen
 
