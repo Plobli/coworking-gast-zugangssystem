@@ -120,11 +120,12 @@ function checkRateLimit(string $clientId, int $maxAttempts = 20, int $timeWindow
 
 /**
  * Generate guest access token
+ * $accessType: 'house_only' (nur Haustür) oder 'house_and_coworking' (Haustür + Coworking-Tür)
  */
-function generateGuestToken(string $guestName, int $startTimestamp, int $expiryTimestamp): string
+function generateGuestToken(string $guestName, int $startTimestamp, int $expiryTimestamp, string $accessType = 'house_only'): string
 {
     $db = new TokenDatabase();
-    
+
     // Automatisches Cleanup alter Token (gelegentlich)
     if (random_int(1, 100) <= 5) { // 5% Chance
         $deleted = $db->cleanupExpiredTokens();
@@ -132,14 +133,15 @@ function generateGuestToken(string $guestName, int $startTimestamp, int $expiryT
             debugLog('Token cleanup', ['deleted_count' => $deleted]);
         }
     }
-    
+
     // Speichere Token-Daten und erhalte kurze ID
     $tokenData = [
         'guest_name' => $guestName,
         'starts' => $startTimestamp,
-        'expires' => $expiryTimestamp
+        'expires' => $expiryTimestamp,
+        'access_type' => $accessType
     ];
-    
+
     return $db->storeToken($tokenData);
 }
 
@@ -184,16 +186,32 @@ function validateGuestToken(string $token): ?array
  */
 function openHouseDoor(): array
 {
+    return openDoorEndpoint('open-house-door');
+}
+
+/**
+ * Open coworking door via Raspberry Pi API
+ */
+function openCoworkingDoor(): array
+{
+    return openDoorEndpoint('open-coworking-door');
+}
+
+/**
+ * Open a door via Raspberry Pi API
+ */
+function openDoorEndpoint(string $endpoint): array
+{
     try {
         $piServiceUrl = envRequired('PI_SERVICE_URL');
         $username = envRequired('PI_API_USERNAME');
         $password = envRequired('PI_API_PASSWORD');
         $cfClientId = envRequired('CF_ACCESS_CLIENT_ID');
         $cfClientSecret = envRequired('CF_ACCESS_CLIENT_SECRET');
-        
+
         // Verwende den korrekten Endpunkt wie im Coworking-System
-        $url = "{$piServiceUrl}/open-house-door";
-        
+        $url = "{$piServiceUrl}/{$endpoint}";
+
         // Prüfe ob cURL verfügbar ist
         if (!function_exists('curl_init')) {
             return ['success' => false, 'message' => 'cURL-Extension nicht verfügbar'];
@@ -238,7 +256,8 @@ function openHouseDoor(): array
         }
         
         if ($httpCode === 200) {
-            return ['success' => true, 'message' => 'Haustür geöffnet', 'response' => $response];
+            $doorLabel = $endpoint === 'open-coworking-door' ? 'Coworking-Tür' : 'Haustür';
+            return ['success' => true, 'message' => "{$doorLabel} geöffnet", 'response' => $response];
         } elseif ($httpCode === 401) {
             return ['success' => false, 'message' => "Authentifizierungsfehler (HTTP 401) - Prüfen Sie Username/Passwort"];
         } elseif ($httpCode === 403) {

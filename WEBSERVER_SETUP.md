@@ -149,11 +149,11 @@ Stellen Sie sicher, dass Ihre `.env` Datei alle notwendigen Variablen enthält:
 ```env
 # Airbnb Guest System Configuration
 APP_DEBUG=false
-APP_DOMAIN=airbnb.buntebutze.de
+APP_DOMAIN=airbnb.example.com
 
 # PI Service Configuration
-PI_SERVICE_URL=https://pi-zugangssystem-coworking.christopherfelix.de
-PI_API_USERNAME=admin
+PI_SERVICE_URL=https://your-pi-service.example.com
+PI_API_USERNAME=your-pi-username
 PI_API_PASSWORD=your-pi-password
 CF_ACCESS_CLIENT_ID=your-cloudflare-access-client-id
 CF_ACCESS_CLIENT_SECRET=your-cloudflare-access-client-secret

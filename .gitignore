@@ -1,7 +1,9 @@
 favicon.ico
 composer.lock
 vendor/
+config/.env
 storage/logs/*.log
 storage/logs/*.json
+storage/tokens.json
 .DS_Store
 *.tmp

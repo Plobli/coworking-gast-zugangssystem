@@ -50,7 +50,8 @@ if (isset($_POST['generate'])) {
     $guestName = trim($_POST['guest_name'] ?? '');
     $validFrom = trim($_POST['valid_from'] ?? '');
     $validUntil = trim($_POST['valid_until'] ?? '');
-    
+    $accessType = ($_POST['access_type'] ?? '') === 'house_and_coworking' ? 'house_and_coworking' : 'house_only';
+
     // Validierung
     if (empty($guestName)) {
         $error = 'Name des Gastes ist erforderlich';
@@ -71,19 +72,21 @@ if (isset($_POST['generate'])) {
             $error = 'Startdatum muss vor dem Enddatum liegen';
         } else {
             try {
-                $guestToken = generateGuestToken($guestName, $startTimestamp, $expiryTimestamp);
+                $guestToken = generateGuestToken($guestName, $startTimestamp, $expiryTimestamp, $accessType);
                 $baseUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? envRequired('APP_DOMAIN'));
-                $generatedLink = $baseUrl . '/guest-access.html?token=' . urlencode($guestToken);
-                
+                $generatedLink = $baseUrl . '/guest-access-page.php?token=' . urlencode($guestToken);
+
                 $startsAt = date('d.m.Y', $startTimestamp);
                 $expiresAt = date('d.m.Y', $expiryTimestamp);
-                $success = "Link erfolgreich generiert! Gültig von: $startsAt (00:00) bis: $expiresAt (23:59)";
-                
+                $accessLabel = $accessType === 'house_and_coworking' ? 'Haustür + Coworking-Tür' : 'nur Haustür';
+                $success = "Link erfolgreich generiert! Zugang: $accessLabel. Gültig von: $startsAt (00:00) bis: $expiresAt (23:59)";
+
                 // Admin-Aktion loggen
                 logGuestAccess("Admin: Link generiert", [
                     'guest_name' => $guestName,
                     'starts' => date('Y-m-d H:i:s', $startTimestamp),
                     'expires' => date('Y-m-d H:i:s', $expiryTimestamp),
+                    'access_type' => $accessType,
                     'admin_ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
                 ]);
                 
@@ -183,11 +186,33 @@ if (isset($_POST['generate'])) {
             font-size: 16px;
             transition: border-color 0.3s ease;
         }
-        
+
         input[type="text"]:focus, input[type="date"]:focus {
             outline: none;
             border-color: #495057;
             box-shadow: 0 0 0 3px rgba(73, 80, 87, 0.1);
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-weight: 400;
+        }
+
+        .radio-option:has(input:checked) {
+            border-color: #495057;
+            background: #f8f9fa;
+        }
+
+        .radio-option input[type="radio"] {
+            width: auto;
+            cursor: pointer;
         }
         
         .btn {
@@ -261,8 +286,8 @@ if (isset($_POST['generate'])) {
     <div class="container">
         <!-- Admin-Interface -->
         <div class="admin-header">
-            <h1>🏠 Airbnb Gäste-Zugang</h1>
-            <p>Zeitbegrenzte Links für Haustür-Zugang</p>
+            <h1>🏠 Gäste-Zugang</h1>
+            <p>Zeitbegrenzte Links für Airbnb- und Team-Gäste</p>
         </div>
         
         <?php if ($success): ?>
@@ -285,6 +310,20 @@ if (isset($_POST['generate'])) {
                        placeholder="z.B. Max Mustermann" required>
             </div>
             
+            <div class="form-group">
+                <label>Zugangsart</label>
+                <label class="radio-option">
+                    <input type="radio" name="access_type" value="house_only"
+                           <?= ($_POST['access_type'] ?? 'house_only') === 'house_only' ? 'checked' : '' ?>>
+                    Nur Haustür (Airbnb-Gast)
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="access_type" value="house_and_coworking"
+                           <?= ($_POST['access_type'] ?? '') === 'house_and_coworking' ? 'checked' : '' ?>>
+                    Haustür + Coworking-Tür (Team-Gast)
+                </label>
+            </div>
+
             <div class="form-group">
                 <label for="valid_from">Link gültig ab (Datum)</label>
                 <input type="date" id="valid_from" name="valid_from" 

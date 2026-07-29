@@ -46,6 +46,7 @@ class TokenDatabase
             'guest_name' => $tokenData['guest_name'],
             'starts' => $tokenData['starts'],
             'expires' => $tokenData['expires'],
+            'access_type' => $tokenData['access_type'] ?? 'house_only',
             'created' => time(),
             'used_count' => 0,
             'last_used' => null

@@ -1,0 +1,243 @@
+/* Hanken Grotesk Font */
+@font-face {
+    font-family: 'Hanken Grotesk';
+    src: url('./fonts/HankenGrotesk-VariableFont_wght.ttf') format('truetype');
+    font-weight: 400 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Hanken Grotesk';
+    src: url('./fonts/HankenGrotesk-Italic-VariableFont_wght.ttf') format('truetype');
+    font-weight: 400 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+body {
+    background-color: #e7eef6;
+    color: #06234b;
+    font-family: "Hanken Grotesk", sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-size: clamp(1rem, 2vw + 1rem, 21px);
+    line-height: clamp(1.5rem, 2vw + 1rem, 32px);
+    font-weight: 400;
+}
+
+p {
+    text-align: center;
+}
+
+.header-text p {
+    text-align: center;
+    font-weight: 400;
+    width: 20em;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0 20px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    flex: 1;
+    text-align: center;
+    padding-top: 5vh;
+    align-items: center;
+}
+.logo img {
+    width: 150px;
+}
+
+.login-button {
+    font-size: 18px;
+    width: 190px;
+    height: 60px;
+    border-width: 2px;
+    color: rgba(6, 35, 75, 1);
+    border-color: rgba(6, 35, 75, 1);
+    font-weight: bold;
+    border-radius: 8px;
+    box-shadow: 3px 3px 0px 1px rgba(6, 35, 75, 1);
+    background: rgba(131, 196, 190, 1);
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-text h1 {
+    font-size: clamp(1.5rem, 3vw + 1rem, 2.2rem);
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.header-text h2 {
+    font-size: clamp(1.2rem, 2vw + 1rem, 1.8rem);
+    text-align: center;
+    margin-bottom: 60px;
+    font-weight: 400;
+}
+
+.input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+input[type=submit] {
+    font-size: 18px;
+    width: 190px;
+    height: 60px;
+    border-width: 2px;
+    color: rgba(6, 35, 75, 1);
+    border-color: rgba(6, 35, 75, 1);
+    font-weight: bold;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    box-shadow: 3px 3px 0px 1px rgba(6, 35, 75, 1);
+    background: rgba(131, 196, 190, 1);
+}
+
+.input span {
+    font-size: 15px;
+}
+
+/* Footer Styles */
+/* Dezenter Footer */
+.footer {
+    background: rgba(6, 35, 75, 0.95);
+    color: #e0e6ef;
+    margin-top: 40px;
+    padding: 32px 10px 18px;
+    font-size: clamp(0.95rem, 1.5vw + 0.9rem, 18px);
+    line-height: clamp(1.4rem, 2vw + 1rem, 28px);
+    box-shadow: 0 -2px 16px 0 rgba(6,35,75,0.07);
+    border-top: 1px solid rgba(131,196,190,0.10);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px;
+}
+
+@media (max-width: 767px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
+
+.footer-section h3 {
+    color: #b2c3d6;
+    margin-bottom: 16px;
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.footer-section p {
+    margin: 10px 0;
+    line-height: clamp(1.4rem, 2vw + 1rem, 28px);
+    text-align: left;
+    color: #c7d2e2;
+    font-size: clamp(0.95rem, 1.5vw + 0.9rem, 18px);
+}
+
+.contact-info p {
+    margin: 20px 0;
+}
+
+.contact-info a {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.contact-info a:hover {
+    color: #83c4be;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin: 12px 0;
+}
+
+.footer-links a {
+    color: #b2c3d6;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-size: clamp(0.95rem, 1.5vw + 0.9rem, 18px);
+}
+
+.footer-links a:hover {
+    color: #83c4be;
+    text-decoration: underline;
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(131,196,190,0.10);
+    margin-top: 14px;
+    padding-top: 4px;
+    text-align: center;
+    font-size: 12px;
+    color: #b2c3d6;
+}
+
+@media (max-width: 767px) {
+    .footer {
+        padding: 24px 8px 12px;
+        font-size: clamp(0.9rem, 2vw + 0.7rem, 16px);
+    }
+
+    .footer-content {
+        gap: 18px;
+    }
+
+    .footer, .footer-content, .footer-section, .footer-section p, .footer-links a {
+        line-height: clamp(1.5rem, 4vw + 1rem, 32px);
+    }
+
+    .beta-notice {
+        padding: 14px;
+    }
+
+    body {
+        font-size: clamp(0.95rem, 2vw + 0.5rem, 18px);
+        line-height: clamp(1.3rem, 2vw + 0.5rem, 28px);
+    }
+
+    .header-text h1 {
+        font-size: 1.8rem;
+    }
+
+    .header-text h2 {
+        font-size: 1.4rem;
+    }
+}

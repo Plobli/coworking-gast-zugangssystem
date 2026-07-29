@@ -14,6 +14,7 @@ if (!checkRateLimit($clientIp, 20, 300)) { // Max 20 Versuche in 5 Minuten
 // Token aus URL extrahieren
 $token = $_GET['token'] ?? '';
 $validateOnly = isset($_GET['validate_only']) && $_GET['validate_only'] === 'true';
+$door = $_GET['door'] ?? 'house'; // 'house' oder 'coworking'
 $response = ['success' => false, 'message' => '', 'debug' => []];
 
 if (empty($token)) {
@@ -67,49 +68,66 @@ try {
         exit;
     }
     
+    $accessType = $guestData['access_type'] ?? 'house_only';
+
     // Nur Token validieren oder auch Tür öffnen?
     if ($validateOnly) {
         // Nur Validierung ohne Türöffnung
         $response['success'] = true;
         $response['message'] = 'Token ist gültig';
         $response['guest_name'] = $guestData['guest_name'];
+        $response['access_type'] = $accessType;
         $response['valid_from'] = isset($guestData['starts']) ? date('d.m.Y', $guestData['starts']) : null;
         $response['valid_until'] = date('d.m.Y', $guestData['expires']);
-        
+
         // Token-Validierung loggen (ohne Türöffnung)
         logGuestAccess("Token validiert", [
             'ip' => $clientIp,
             'guest_name' => $guestData['guest_name'],
             'expires' => date('Y-m-d H:i:s', $guestData['expires'])
         ]);
-        
+
         http_response_code(200);
     } else {
-        // Haustür öffnen
-        $doorResult = openHouseDoor();
-        
+        // Nur Token mit entsprechendem Zugangstyp dürfen die Coworking-Tür öffnen
+        if ($door === 'coworking' && $accessType !== 'house_and_coworking') {
+            $response['error'] = 'Dieser Zugangs-Link ist nicht für die Coworking-Tür freigeschaltet';
+            http_response_code(403);
+            logGuestAccess("Coworking-Tür verweigert (falscher Zugangstyp)", [
+                'ip' => $clientIp,
+                'guest' => $guestData['guest_name'],
+                'access_type' => $accessType
+            ]);
+            echo json_encode($response);
+            exit;
+        }
+
+        $doorResult = $door === 'coworking' ? openCoworkingDoor() : openHouseDoor();
+        $doorLabel = $door === 'coworking' ? 'Coworking-Tür' : 'Haustür';
+
         if ($doorResult['success']) {
             $response['success'] = true;
-            $response['message'] = 'Haustür wurde geöffnet...';
+            $response['message'] = "{$doorLabel} wurde geöffnet...";
             $response['guest_name'] = $guestData['guest_name'];
+            $response['access_type'] = $accessType;
             $response['valid_from'] = isset($guestData['starts']) ? date('d.m.Y', $guestData['starts']) : null;
             $response['valid_until'] = date('d.m.Y', $guestData['expires']);
-            
+
             // Erfolgreichen Zugang loggen
-            logGuestAccess("Haustür geöffnet", [
+            logGuestAccess("{$doorLabel} geöffnet", [
                 'ip' => $clientIp,
                 'guest_name' => $guestData['guest_name'],
                 'expires' => date('Y-m-d H:i:s', $guestData['expires'])
             ]);
-            
+
             // Cloudflare Worker Log (falls verwendet)
-            sendLogToCloudflare($guestData['guest_name'], "Haustür");
-            
+            sendLogToCloudflare($guestData['guest_name'], $doorLabel);
+
             http_response_code(200);
         } else {
             $response['error'] = 'Türöffnung fehlgeschlagen: ' . $doorResult['message'];
             http_response_code(500);
-            
+
             logGuestAccess("Türöffnung fehlgeschlagen", [
                 'ip' => $clientIp,
                 'guest' => $guestData['guest_name'],
