@@ -1,7 +1,6 @@
-FROM php:8.2-apache
+FROM php:8.5-apache
 
-RUN docker-php-ext-install opcache \
-    && a2enmod rewrite headers expires
+RUN a2enmod rewrite headers expires
 
 COPY config /var/www/config
 COPY public /var/www/html
