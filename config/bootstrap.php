@@ -206,8 +206,6 @@ function openDoorEndpoint(string $endpoint): array
         $piServiceUrl = envRequired('PI_SERVICE_URL');
         $username = envRequired('PI_API_USERNAME');
         $password = envRequired('PI_API_PASSWORD');
-        $cfClientId = envRequired('CF_ACCESS_CLIENT_ID');
-        $cfClientSecret = envRequired('CF_ACCESS_CLIENT_SECRET');
 
         // Verwende den korrekten Endpunkt wie im Coworking-System
         $url = "{$piServiceUrl}/{$endpoint}";
@@ -225,10 +223,6 @@ function openDoorEndpoint(string $endpoint): array
             CURLOPT_TIMEOUT => 30,
             CURLOPT_CONNECTTIMEOUT => 10,
             CURLOPT_USERPWD => "{$username}:{$password}",
-            CURLOPT_HTTPHEADER => [
-                "CF-Access-Client-Id: {$cfClientId}",
-                "CF-Access-Client-Secret: {$cfClientSecret}"
-            ],
             // Kein POST-Body needed für GET request
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_FOLLOWLOCATION => true,

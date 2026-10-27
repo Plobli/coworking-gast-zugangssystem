@@ -168,8 +168,6 @@ APP_DOMAIN=gast.buntebutze.de
 PI_SERVICE_URL=https://ihr-pi-service.example.com
 PI_API_USERNAME=ihr-pi-username
 PI_API_PASSWORD=ihr-pi-passwort
-CF_ACCESS_CLIENT_ID=ihre-cloudflare-access-client-id
-CF_ACCESS_CLIENT_SECRET=ihr-cloudflare-access-client-secret
 
 # Guest Access System
 GUEST_ADMIN_PASSWORD=ihr-sicheres-admin-passwort
@@ -219,7 +217,6 @@ chmod 777 storage/logs/
 ### Problem: Tür öffnet nicht ("Authentifizierungsfehler HTTP 401 / 403")
 **Lösung:**
 - HTTP 401: `PI_API_USERNAME` / `PI_API_PASSWORD` prüfen
-- HTTP 403: `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` prüfen (Cloudflare Access vor dem Pi-Service)
 - HTTP 404: `PI_SERVICE_URL` prüfen — erwartete Endpunkte sind `/open-house-door` und `/open-coworking-door`
 
 ### Problem: Coworking-Tür wird nicht angezeigt / lässt sich nicht öffnen
