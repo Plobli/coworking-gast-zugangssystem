@@ -233,7 +233,6 @@ function openDoorEndpoint(string $endpoint): array
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
         $effectiveUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
-        curl_close($ch);
         
         // Debug-Informationen loggen
         debugLog('Door API Request', [
@@ -298,7 +297,6 @@ function sendLogToCloudflare(string $guestName, string $doorType): void
         ]);
         
         curl_exec($ch);
-        curl_close($ch);
     } catch (Exception $e) {
         // Logging failures should not break the main functionality
         debugLog('Cloudflare log failed', ['error' => $e->getMessage()]);
